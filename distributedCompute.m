@@ -301,7 +301,7 @@ if nargin > 1
                         timestamp{counter}];
                     save([clientpath,'\distributedComputeInput'],...
                         'argumentsCell','originalPositionCell','functionToCompute',...
-                        'poolsize','useJobScheduler','redistributeStruct','commonvariables');
+                        'poolsize','useJobScheduler','redistributeStruct','commonvariables','-v7.3');
                     for ijk = 1:length(includePathsCell)
                         copyfile(['includepath',num2str(ijk),'.zip'],clientpath);
                     end
@@ -378,7 +378,12 @@ if nargin > 1
                     clientpath =['\\',clientMachineNames{counter2},'\'...
                         targetDriveLettersCellInClientMachines{counter2},'$\distributedCompute\',...
                         timestamp{counter2}];
+                    try
                     save([clientpath,filesep,'startSignal.mat'],'goAhead');
+                    catch ex
+                        2;
+                        rethrow(ex);
+                    end
                 end
             end
             if ~goAhead
@@ -606,40 +611,42 @@ if nargin > 1
                 end
                 tss=datestr(now,30);
                 for counter=1:noOfClients
-                    whosResult = whos('cellArrayOfResults');
-                    if 1==1 && (whosResult(1).bytes/1024/1024>5000 || ...
-                            (outputdumps>0 && counter==noOfClients))
-                        warning(['The size of output has ',...
-                            'increased to more than 5000M; distributedCompute ',...
+%                     whosResult = whos('cellArrayOfResults');
+                    %                     if 1==1 && (whosResult(1).bytes/1024/1024>5000 || ...
+                    %                             (outputdumps>0 && counter==noOfClients))
+                    %                         warning(['The size of output has ',...
+                    %                             'increased to more than 5000M; distributedCompute ',...
+                    %                             'will write parts of the output from the clients ',...
+                    %                             'to mat files with the name ',tss,...
+                    %                             'distributedComputeOutputPartx.mat in the current ',...
+                    %                             'workspace. Try joining them or accessing them manually']);
+                    memoryinfo = memory;
+                    if memoryinfo.MemAvailableAllArrays/1024/1024<1000 || ...
+                            (outputdumps>0 && counter==noOfClients)
+                        warning(['The amount of available memory has ',...
+                            'decreased to less than 1000M; distributedCompute ',...
                             'will write parts of the output from the clients ',...
                             'to mat files with the name ',tss,...
                             'distributedComputeOutputPartx.mat in the current ',...
                             'workspace. Try joining them or accessing them manually']);
-                        %                     if memoryinfo.MemAvailableAllArrays/1024/1024<1000 || ...
-                        %                             (outputdumps>0 && counter==noOfClients)
-                        %                         warning(['The amount of available memory has ',...
-                        %                             'decreased to less than 1000M; distributedCompute ',...
-                        %                             'will write parts of the output from the clients ',...
-                        %                             'to mat files with the name ',tss,...
-                        %                             'distributedComputeOutputPartx.mat in the current ',...
-                        %                             'workspace. Try joining them or accessing them manually']);
                         outputdumps=outputdumps+1;
                         if outputdumps==1
                             save([tss,'distributedComputeInputs'],...
                                 'functionToCompute',...
                                 'cellArrayOfArguments','clientMachineNames',...
                                 'targetDriveLettersCellInClientMachines',...
-                                'includePathsCell','varargin');
+                                'includePathsCell','varargin','-v7.3');
                         end
                         disp(['Saving ',tss,'distributedComputeOutputPart',...
                             num2str(outputdumps),'.mat...']);
                         save([tss,'distributedComputeOutputPart',...
                             num2str(outputdumps)],'cellArrayOfResults',...
                             'originalIndicesOfOutputs','-v7.3');
-                                        cellArrayOfResults = cell(1,noOfTasks);
-
+                        cellArrayOfResults = cell(1,noOfTasks);
+                        
                     end
-                    clear outputsCell originalIndicesOfOutputs                    
+                    clear outputsCell originalIndicesOfOutputs
+                    disp([clientTempFolders{counter},filesep,'distributedComputeOutput.mat']);
                     load([clientTempFolders{counter},filesep,'distributedComputeOutput.mat']);
                     len = length(outputsCell);
                     fprintf(1,'.');
@@ -653,15 +660,15 @@ if nargin > 1
                     %                 rmdir(clientTempFolders{counter});
                     %             catch e
                     %                 warning(['Couldn''t delete temporary folder in client ',clients{counter}]);
-                    %             end                  
+                    %             end
                 end
                 if outputdumps~=0
                     outputdumps=outputdumps+1;
-                      disp(['Saving ',tss,'distributedComputeOutputPart',...
-                            num2str(outputdumps),'.mat...']);
-                        save([tss,'distributedComputeOutputPart',...
-                            num2str(outputdumps)],'cellArrayOfResults',...
-                            'originalIndicesOfOutputs','-v7.3');
+                    disp(['Saving ',tss,'distributedComputeOutputPart',...
+                        num2str(outputdumps),'.mat...']);
+                    save([tss,'distributedComputeOutputPart',...
+                        num2str(outputdumps)],'cellArrayOfResults',...
+                        'originalIndicesOfOutputs','-v7.3');
                 end
                 err=0;
             catch exc
@@ -744,7 +751,7 @@ else
             end
             eval(evalstring);
             originalIndicesOfOutputs = originalPositionCell;
-            save('distributedComputeOutput','outputsCell','originalIndicesOfOutputs');
+            save('distributedComputeOutput','outputsCell','originalIndicesOfOutputs','-v7.3');
             statusupdate(['done; 0 0 0~0']);
             
         else
@@ -1011,7 +1018,7 @@ else
                         originalIndicesOfOutputs{k} = results2{i,2}{j};
                     end
                 end
-                save('distributedComputeOutput','outputsCell','originalIndicesOfOutputs');
+                save('distributedComputeOutput','outputsCell','originalIndicesOfOutputs','-v7.3;);
                 statusupdate(['done;',num2str([timePerEstim1(:); timePerEstim2(:)]'),...
                     '~',num2str(fl+noOfInitialEstimations*idealNoOfJobsPerTask)]);
                 disp('All estimations have been finished successfully');
@@ -1062,7 +1069,7 @@ else
                             if toc(timing2)>60*60*1
                                 timing2=tic;
                                 save('distributedComputeOutputTemp',...
-                                    'outputsCell','originalPositionCell');
+                                    'outputsCell','originalPositionCell','-v7.3');
                             end
                         end
                         
@@ -1088,7 +1095,7 @@ else
                     end
                 end
                 originalIndicesOfOutputs = originalPositionCell;
-                save('distributedComputeOutput','outputsCell','originalIndicesOfOutputs');
+                save('distributedComputeOutput','outputsCell','originalIndicesOfOutputs','-v7.3');
                 statusupdate(['done; 0 0 0~0']);
                 disp('all evals finished successfully');
             end
@@ -1111,7 +1118,7 @@ else
             % % % %     statusupdate('done');
             % % % %     dfisp('All estimations have been finished successfully');
         catch e
-            save('dumpbeforeerror');
+            save('dumpbeforeerror','-v7.3');
             statusupdate(['error: ',e.message]);
             rethrow(e);
             
@@ -1269,7 +1276,7 @@ if isempty(pathToGo)
     error('can not find psexec.exe! place that file in the same folder as this method!');
 end
 cd(pathToGo);
-[status result] = dos(['psexec ',computer,' -i 0 -low ',argumentString]);
+[status result] = dos(['psexec ',computer,' -i 0 -abovenormal ',argumentString]);
 cd(currentPath);
 
 
