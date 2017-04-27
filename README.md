@@ -1,6 +1,6 @@
 # distributedCompute
-DISTRIBUTEDCOMPUTE Evaluate a function on multiple arguments over man
-client machines
+## Evaluate a function on multiple arguments over many client machines
+
    Use distributedCompute to evaluate a function on a cell array of
    arguments on many client machines. The function accepts as arguments
    the handle of the function to execute, a cell array of arguments, a
@@ -38,6 +38,8 @@ client machines
    then it must be included as another machine in the machine names list.
 
    Possible Syntax:
+   
+   ```
  cellArrayOfResults = distributedCompute(functionToCompute,...
                                          cellArrayOfArguments,...
                                          clientMachineNames,...
@@ -52,10 +54,14 @@ client machines
                                          splitRatios,...
                                          poolSize);
 
-
+```
 
    Input Arguments:
+   
+   
        functionToCompute
+       
+       
            Handle of the function to execute. This function will be
            required to accept only one argument (functions that take in
            multiple arguments can be abstracted with a wrapper function
