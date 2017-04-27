@@ -1,5 +1,6 @@
 # distributedCompute
 ## Evaluate a function on multiple arguments over many client machines
+### (To use with MATLAB on windows machines)
 
    Use distributedCompute to evaluate a function on a cell array of
    arguments on many client machines. The function accepts as arguments
@@ -60,8 +61,6 @@
    
    
        functionToCompute
-       
-       
            Handle of the function to execute. This function will be
            required to accept only one argument (functions that take in
            multiple arguments can be abstracted with a wrapper function
@@ -109,9 +108,11 @@
 
 
    Output
+   
        cellArrayOfResults
            A cell array containing the results given by evaluation of
            function with the corresponding element of the input
            arguments-cell array. The correspondence is maintained
            perfectly and when there's an error in the evaluation that
            position will be empty in this array.
+           
