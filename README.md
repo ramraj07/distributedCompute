@@ -2,6 +2,8 @@
 ## Evaluate a function on multiple arguments over many client machines
 ### (To use with MATLAB on windows machines)
 
+   This is a function to perform distributed computing on multiple windows machines that are connected by a network and have MATLAB installed, without using the MATLAB distributed computing toolbox (the default configuration of this function does require the parallel computing toolbox though, but it can be easily modified to not require it either). It automates everything, including saving the input data in the clients, zipping and sending the include path files to the clients, starting matlab and monitoring the execution showing a nice GUI status of execution in each client, and when all clients finish processing, reading the files back and returning the output. When everything's set up, this code can execute as seamlessly as a parfor loop. It was primarily designed to run computations on regular windows machines that already have MATLAB installed. Given enough RAM, it can start and run in the background of regular users' machines without affecting their workflow or performance (Windows 7 and up open these MATLAB windows in a hidden screen).  
+   
    Use distributedCompute to evaluate a function on a cell array of
    arguments on many client machines. The function accepts as arguments
    the handle of the function to execute, a cell array of arguments, a
