@@ -121,13 +121,6 @@ global crashMainThread refreshdata
 crashMainThread = 0; refreshdata=false;
 
 if nargin > 1
-    % function cellArrayOfResults = distributedCompute( varargin )
-    % if nargin ~= 0
-    %     functionToCompute = varargin{1};
-    %     cellArrayOfArguments = varargin{2};
-    %     clientMachineNames = varargin{3};
-    %     targetDriveLettersCellInClientMachines=varargin{4};
-    %     includePathsCell=varargin{5};
     try
         noOfClients = length(clientMachineNames);
         if length(targetDriveLettersCellInClientMachines) ~= noOfClients
@@ -161,7 +154,7 @@ if nargin > 1
                 includePathsCell(ijk)=[];
             end
         end
-        
+
         if skipToEnd==0
             bytesizeOfArray1 = bytesizeOfArray;
             %ts1 = timestamp;
@@ -182,7 +175,7 @@ if nargin > 1
             if nargin>7
                 useJobScheduler = varargin{3};
             end
-            
+
             splitRatios1 = round(splitRatios*10000);
             ss = sum(splitRatios1);
             for i=length(splitRatios):-1:1
@@ -247,12 +240,6 @@ if nargin > 1
             redistributeStruct.varargin = varargin;
             try
                 writeMatlabpoolinline = false;
-                %                 if strcmp(questdlg('do you want to write matlabpool in mfile itself?'),'Yes')
-                %                     writeMatlabpoolinline = true;
-                %                 else
-                %                     writeMatlabpoolinline = false;
-                %                 end
-                
                 for counter=1:noOfClients
                     timestamp{counter} = [basetimestamp,num2str(randval(counter))];
                     clientpath =['\\',clientMachineNames{counter},'\'...
@@ -271,21 +258,6 @@ if nargin > 1
                             tasksForThisClient(counter3);
                         counter2=counter2+1;
                     end
-                    %                 for counter3=1:noOfTasks
-                    %                     if ~assignedAClient(randSortOrder(counter3))
-                    %                         argumentsCell{end+1} = cellArrayOfArguments{randSortOrder(counter3)};
-                    %                         originalPositionCell{end+1} = randSortOrder(counter3);
-                    %                         counter2=counter2+1;
-                    %                         assignedAClient(randSortOrder(counter3))=1;
-                    %                         if counter~=noOfClients && counter2>=noOfTasksPerClient
-                    %                             break;
-                    %                         end
-                    %                         if sum(~assignedAClient)==0
-                    %                             break;
-                    %                         end
-                    %
-                    %                     end
-                    %                 end
                     if counter2==0
                         warning(['Not using client ',clientMachineNames{counter}]);
                         reduceClientNo(end+1) = counter;
@@ -295,7 +267,7 @@ if nargin > 1
                     %%
                     %save arguments cell array  to this
                     %client path
-                    
+
                     dos(['mkdir ',clientpath]);
                     clientLocalPath = [targetDriveLettersCellInClientMachines{counter},':\distributedCompute\',...
                         timestamp{counter}];
@@ -308,20 +280,20 @@ if nargin > 1
                     copyfile([mfilename('fullpath'),'.m'],clientpath);
                     fh = fopen([clientpath,'\batch1.bat'],'w');
                     fprintf(fh,' %s: & cd \\distributedCompute\\%s\\ & matlab -r runit',targetDriveLettersCellInClientMachines{counter},timestamp{counter});
-                    
-                    
+
+
                     fclose(fh);
                     fh = fopen([clientpath,'\killprocess.bat'],'w');
                     fprintf(fh,'taskkill /FI "WINDOWTITLE eq distributedComputeClient%s"',timestamp{counter});
                     fprintf(fh,' & %s: & rd \\distributedCompute\\%s /s /q',targetDriveLettersCellInClientMachines{counter},timestamp{counter});
                     fclose(fh);
-                    
-                    
+
+
                     fh = fopen([clientpath,'\killprocess2.bat'],'w');
                     fprintf(fh,'taskkill /im:matlab.exe /f');
                     fprintf(fh,' & %s: & rd \\distributedCompute\\%s /s /q',targetDriveLettersCellInClientMachines{counter},timestamp{counter});
                     fclose(fh);
-                    
+
                     fh=fopen([clientpath,'\runit.m'],'w');
                     %    for ijk = 1:length(includeNetworkPathsCell)
                     %       fprintf(fh,'addpath(genpath(''%s''));\n',includeNetworkPathsCell{ijk});
@@ -348,7 +320,7 @@ if nargin > 1
                     fprintf(fh,'break;\nend;\nend;\nend;\n');
                     fprintf(fh,'if err==0,disp(''waiting for data to be retrieved...'');mfp=mfilename(''fullpath'');[cdtohere ~]=fileparts(mfp);cd(cdtohere); while ~exist(''dataread.txt'',''file''), pause(5);end;deldir=pwd;cd(''..'');restoredefaultpath;try, rmdir(deldir,''s'');end;exit;end');
                     %  fprintf(fh,'if e==0, t2=timer(''TimerFcn'',''deldir=pwd;cd(''''..'''');restoredefaultpath;rmdir(deldir,''''s'''');exit'',''startdelay'',400);start(t2);end');
-                    
+
                     fclose(fh);
                     disp(['Starting MATLAB in ',clientMachineNames{counter},'...']);
                     [status result] = psexecos(['\\',clientMachineNames{counter}],...
@@ -356,7 +328,7 @@ if nargin > 1
                     if status~=0
                         error(['psexec failed to launch matlab in ',clientMachineNames{counter}]);
                     end
-                    
+
                 end
                 goAhead = true;
             catch exc
@@ -372,7 +344,7 @@ if nargin > 1
             end
             % all clients have started matlab successfully. so we can give
             % a "start" signal.
-            
+
             for counter2 = 1:counter
                 if ~isempty(clientMachineNames{counter2})
                     clientpath =['\\',clientMachineNames{counter2},'\'...
@@ -389,10 +361,10 @@ if nargin > 1
             if ~goAhead
                 rethrow(exc);
             end
-            
+
             ts1 = timestamp;
             tp1 = clock;
-            
+
             save('distributedComputeDetails','bytesizeOfArray1','ts1','clientTempFolders','estimationsSplit','tp1');
         end
         clientsStatus = cell(noOfClients,1);
@@ -405,14 +377,14 @@ if nargin > 1
         dataToPassToOtherFunctions.sampleData = cellArrayOfArguments{1};
         dataToPassToOtherFunctions.functionToCompute = functionToCompute;
         dataToPassToOtherFunctions.includePathsCell = includePathsCell;
-        
-        
+
+
         % here we infintely loop and keep checking if all the client machines
         % have finished processing. The loop uses "statusupdate" method to
         % check the status of each client and if there's an error anywhere,
         % this script will also crash. The check is done every 2 minutes (120
         % seconds).
-        
+
         if ~exist('clientStatus','var')
             for counter=1:noOfClients
                 clientpath =['\\',clientMachineNames{counter},'\'...
@@ -434,7 +406,7 @@ if nargin > 1
                     doagain = 1;
                     break;
                 end
-                
+
             end
             if doagain == 1
                 continue
@@ -515,16 +487,16 @@ if nargin > 1
                     break;
                 else
                     status = ['Client(s) are still running. Status at ',datestr(now),' is: '];
-                    
-                    
-                    
+
+
+
                     %             disp(status);
                     data = cell(noOfClients,5);
                     timeForEstimationsAll = [];totalFinished=0;
-                    
+
                     for counter=1:noOfClients
                         %disp([clients{counter},': ',clientsStatus{counter}]);
-                        
+
                         data{counter,1} = clients{counter};
                         %parse clientStatus for variables:
                         st =clientsStatus{counter};
@@ -548,22 +520,22 @@ if nargin > 1
                             data{counter,3} = st;
                             data{counter,4} = '';
                             data{counter,5} = '';
-                            
+
                         end
                         status = sprintf('%s\n\r%s',status,[clients{counter},': ',st]);
                     end
                     %            status = char([clients clientsStatus cellstr(repmat(char(13),noOfClients,1))]');
-                    
+
                     set(findobj('tag','estimationProcessClientStatusTable'),'data',...
                         data);
-                    
+
                     remaining = (1-min(finishFraction))*diff/min(finishFraction);
-                    
+
                     if remaining == Inf, remaining = 0;end
                     %diff*(noOfTasks-totalFinished)/totalFinished;
                     estimatedremainingtime =  [num2str(floor(remaining/3600)),' hours and ',...
                         num2str(ceil(rem(remaining/60,60))),' minutes.'];
-                    
+
                     statistics = [num2str(totalFinished),'/',num2str(noOfTasks),...
                         ' evaluations finished. Cumulative Speed: ',...
                         num2str(totalFinished/(diff/60),'%1.2f'),...
@@ -575,7 +547,7 @@ if nargin > 1
                     %set the label on the figure too
                     set(findobj('tag','estimationProcessClientStatusStats'),...
                         'string',statistics);
-                    
+
                     %    statusupdate( sprintf('%s\n\r%s',status,statistics),...
                     %        'c:\ati\my dropbox');
                 end
@@ -584,7 +556,7 @@ if nargin > 1
             2;
             ans = questdlg('hey. stuff crashed. wanna break here?');
         end
-        
+
         %This part of the code is reached only after all the client machines
         %update their statuses to 'done' meaning execution was fully
         %successful. Here below we will load each of the clients' "out.mat"
@@ -611,15 +583,6 @@ if nargin > 1
                 end
                 tss=datestr(now,30);
                 for counter=1:noOfClients
-%                     whosResult = whos('cellArrayOfResults');
-                    %                     if 1==1 && (whosResult(1).bytes/1024/1024>5000 || ...
-                    %                             (outputdumps>0 && counter==noOfClients))
-                    %                         warning(['The size of output has ',...
-                    %                             'increased to more than 5000M; distributedCompute ',...
-                    %                             'will write parts of the output from the clients ',...
-                    %                             'to mat files with the name ',tss,...
-                    %                             'distributedComputeOutputPartx.mat in the current ',...
-                    %                             'workspace. Try joining them or accessing them manually']);
                     memoryinfo = memory;
                     if memoryinfo.MemAvailableAllArrays/1024/1024<1000 || ...
                             (outputdumps>0 && counter==noOfClients)
@@ -643,7 +606,7 @@ if nargin > 1
                             num2str(outputdumps)],'cellArrayOfResults',...
                             'originalIndicesOfOutputs','-v7.3');
                         cellArrayOfResults = cell(1,noOfTasks);
-                        
+
                     end
                     clear outputsCell originalIndicesOfOutputs
                     disp([clientTempFolders{counter},filesep,'distributedComputeOutput.mat']);
@@ -656,11 +619,6 @@ if nargin > 1
                                 outputsCell{counter2};
                         end
                     end
-                    %             try
-                    %                 rmdir(clientTempFolders{counter});
-                    %             catch e
-                    %                 warning(['Couldn''t delete temporary folder in client ',clients{counter}]);
-                    %             end
                 end
                 if outputdumps~=0
                     outputdumps=outputdumps+1;
@@ -678,7 +636,7 @@ if nargin > 1
             end
         end
         for counter=1:noOfClients
-            
+
             if 1==1
                 tf = fopen([clientTempFolders{counter},filesep,'dataread.txt'],'w');
                 fclose(tf);
@@ -695,41 +653,13 @@ if nargin > 1
         2; disp('whoa, there''s an error.');
         fppath = mfilename('fullpath');
         dbstop('in',[fppath,'.m'],'at','290');
-        2;
-        3;
-        4;
-        5;
-        3;
-        3;
-        3;
-        3;
-        3;
-        3;
-        3;
-        3;
-        3;
-        3;
-        3;
-        3;
-        3;
-        3;
-        6;
-        7;
-        8;
-        9;
-        
     end
-    
-    
+
+
 else
     if nargin==1
         if ischar(functionToCompute) && strcmpi(functionToCompute,'redistribute')
             load distributedComputeInput
-            %             redistributeStruct.functionToCompute = functionToCompute;
-            %             redistributeStruct.clientMachineNames = clientMachineNames;
-            %             redistributeStruct.targetDriveLettersCellInClientMachines = ...
-            %                 targetDriveLettersCellInClientMachines;
-            %             redistributeStruct.varargin = varargin;
             evalstring = ['outputsCell = ',...
                 'distributedCompute(redistributeStruct.functionToCompute,',...
                 'argumentsCell,redistributeStruct.clientMachineNames,',...
@@ -753,7 +683,7 @@ else
             originalIndicesOfOutputs = originalPositionCell;
             save('distributedComputeOutput','outputsCell','originalIndicesOfOutputs','-v7.3');
             statusupdate(['done; 0 0 0~0']);
-            
+
         else
             error('invalid one parameter option');
         end
@@ -788,7 +718,7 @@ else
             assignin('base','commonvariables',commonvariables);
             len = length(argumentsCell);
             if useJobScheduler
-                
+
                 SDF = java.text.SimpleDateFormat('E MMM dd H:m:s z yyyy', java.util.Locale.US);
                 disp(['Total of ',num2str(len),' evaluations to be done.']);
                 sched = findResource('scheduler','type','local');
@@ -801,9 +731,9 @@ else
                 end
                 disp(['Performing ',num2str(poolSize),' evaluations to gauge time taken']);
                 statusupdate(['Performing first ',num2str(poolSize),' evaluations']);
-                
+
                 timeTaken = zeros(poolSize,1);
-                
+
                 %do 1 estimation in each client first to find out how long it
                 %takes
                 if len<poolSize
@@ -826,7 +756,7 @@ else
                 jobsFinished = double(0);
                 timeTaken = 0.001;
                 smallerTime = 0;
-                
+
                 if originalLen<=poolSize
                     %special cases where the no of estimations to be done is lesser
                     %than the no of clients allowed.
@@ -836,7 +766,7 @@ else
                     timeLimit = 300;
                     fractionNeeded = 0.75;
                 end
-                
+
                 while timeTaken < timeLimit
                     pause(20);
                     [p,r,f] = job1.findTask;
@@ -852,27 +782,27 @@ else
                     end
                     timeTaken = timeTaken+20;
                 end
-                
-                
+
+
                 idealNoOfJobsPerTask=1;
                 if originalLen<=poolSize
                     %no need to do further stuff..
                     results2 = [];
-                    
+
                     %get the results and put them back into a new cesc array
                     % clear cesc cpmilc cellcell cellcell1
                     results1 = getAllOutputArguments(job1);
                     %results2 = getAllOutputArguments(job2);
-                    
+
                 else
-                    
+
                     if smallerTime~=0
                         %most jobs finished within 5 min, find out mean time taken for jobs
                         %to finish and construct cell arrays of tasks accordingly.
                         %find mean time taken by finished tasks
                         meantt=  0;
                         timePerEstim1 = zeros(fl,1);
-                        
+
                         for i=1:fl
                             startdate = f(i).StartTime;
                             finishdate = f(i).FinishTime;
@@ -892,7 +822,7 @@ else
                             divisions = 1:idealNoOfJobsPerTask:len;
                             if divisions(end) ~=len, divisions(end+1) = len;end
                             noOfDivisions = length(divisions)-1;
-                            
+
                         else
                             noOfDivisions = 1;
                             divisions = [1 1];
@@ -913,7 +843,7 @@ else
                             end
                             cellcell{i} = {functionToCompute, subcell, pmsubcell};
                         end
-                        
+
                     else
                         %most tasks DIDNT finish within 5 min, its ok to pass single
                         %Estimations as seperate tasks.
@@ -923,14 +853,14 @@ else
                         for i=1:len
                             cellcell{i} = {functionToCompute,{argumentsCell{i}},{originalPositionCell{i}}};
                         end
-                        
+
                     end
                     % meantt = mean(timeTaken);
-                    
+
                     %% create another job for all the other estimations and submit it also to the local scheduler
                     job2 = createJob();
                     set(job2,'pathDependencies',strread(path, '%s', 'delimiter',';'));
-                    
+
                     createTask(job2, @evaluateFunctions, 2, cellcell);
                     submit(job2);
                     %% check status of job2 every minute
@@ -985,7 +915,7 @@ else
                                 disp([num2str((noOfInitialEstimations+fl)*idealNoOfJobsPerTask),...
                                     ' finished, ',num2str(rl*idealNoOfJobsPerTask),...
                                     ' running, ',num2str(pl*idealNoOfJobsPerTask),' pending']);
-                                
+
                             else
                                 %statusupdate('All estimations have finished!');
                                 disp('Finished all evaluations');
@@ -995,14 +925,14 @@ else
                         end
                         pause(60);
                     end
-                    
+
                     %%
                     %get the results and put them back into a new cesc array
                     %clear cellcell cellcell1
                     results1 = getAllOutputArguments(job1);
                     results2 = getAllOutputArguments(job2);
                 end
-                
+
                 %%
                 outputsCell = cell(length(results1)+length(results2),1);originalIndicesOfOutputs =outputsCell;
                 k=0;
@@ -1025,12 +955,8 @@ else
             else
                 if matlabpool('size')==0 && poolsize~=1
                     matlabpool open
-                else
-                    %                 if poolsize==1
-                    %                     matlabpool close
-                    %                 end
                 end
-                
+
                 outputsCell = cell(len,1);
                 if poolsize == 1
                     fractionFree = 0;attempts = 0;fractionTrheshold = 0.8;
@@ -1052,10 +978,10 @@ else
                             disp('memory usage too high to start; waiting for ten minutes.');
                             pause(10*60);
                         end
-                        
+
                     end
-                    
-                    
+
+
                     statusupdate('Starting evaluations...');
                     timing=tic;timing2=tic;
                     for i=1:len
@@ -1072,7 +998,7 @@ else
                                     'outputsCell','originalPositionCell','-v7.3');
                             end
                         end
-                        
+
                     end
                 else
                     statusupdate('Running evaluations with parfor~0');
@@ -1087,10 +1013,6 @@ else
                             end
                             fh = fopen(['ex-status',filesep,datestr(now,30),'.txt'],'w');
                             fclose(fh);
-                            %                         outputValue = outputsCell{i};
-                            %                         originalPos = originalPositionCell{i};
-                            %                         save(['ex-status',filesep,datestr(now,30)],...
-                            %                             'outputValue','originalPos');
                         end
                     end
                 end
@@ -1099,38 +1021,17 @@ else
                 statusupdate(['done; 0 0 0~0']);
                 disp('all evals finished successfully');
             end
-            % % % %     %%
-            % % % %
-            % % % %     %     into=floor(len/9);
-            % % % %     %     divs=ceil(len/into);
-            % % % %     %     splits=1:divs:len
-            % % % %     %     splits(end+1)=len;
-            % % % %     statusupdate('Started estimations');
-            % % % %     for i=1:into
-            % % % %         parfor j=splits(i):splits(i+1)
-            % % % %             cesc{j} = perform_estimation(cesc{j});
-            % % % %         end
-            % % % %         strs=['Part ',num2str(i),' of ',num2str(into),' done.'];
-            % % % %         statusupdate(strs);
-            % % % %         disp(strs);
-            % % % %     end
-            % % % %     save('out','cesc','cpmilc');
-            % % % %     statusupdate('done');
-            % % % %     dfisp('All estimations have been finished successfully');
         catch e
             save('dumpbeforeerror','-v7.3');
             statusupdate(['error: ',e.message]);
             rethrow(e);
-            
+
         end
         cellArrayOfResults = [];
     end
 end
 end
 function [output,order] = evaluateFunctions(fhandle,inputargs,indextopassback)
-% fhandle = inputcellarray{1};
-% inputargs = inputcellarray{2};
-% indextopassback = inputcellarray{3};
 disp(inputargs);
 output = {};%sqrt(inputargs);
 order = {};
@@ -1148,7 +1049,7 @@ fh = findobj('tag','process_estim_singles_figure');
 openFigure=0;
 if isempty(fh)
     openFigure = 1;
-    
+
 else
     if length(fh)>1
         close(fh);
@@ -1157,12 +1058,12 @@ else
 end
 
 if openFigure==1
-    
+
     fh = figure('tag','process_estim_singles_figure','position',...
         [   501   278   574   388],'toolbar','none','menubar','none',...
         'name','distributedCompute Master-client status',...
         'resize','off');
-    
+
     margin = 0.050;labelH = 0.1;
     buttonheight = labelH*0.75;buttonwidth = 0.2;
     tbox = uitable('units','normalized',...
@@ -1173,7 +1074,7 @@ if openFigure==1
         'position',[margin,1-3*margin-labelH,1-2*margin,labelH],...
         'string','hi','fontsize',10,'horizontalalignment','left',...
         'tag','estimationProcessClientStatusStats');
-    
+
     label2 = uicontrol('style','text','units','normalized',...
         'position',[margin,1-2*margin,1-2*margin,labelH],...
         'string','hi2','fontsize',13,'horizontalalignment','left',...
@@ -1184,8 +1085,8 @@ if openFigure==1
     button2 = uicontrol('style','pushbutton','units','normalized',...
         'position',[margin margin buttonwidth buttonheight],...
         'string','Refresh data now','callback',{@refreshdata,dataToPassToOtherFunctions});
-    
-    
+
+
     set(tbox,'units','pixels');
     tp = get(tbox','position');
     width = tp(3)-40;
@@ -1215,12 +1116,6 @@ switch(answ)
                 dataToPassToOtherFunctions.clientMachineNames{counter}],...
                 [clientLocalPath,'\killprocess.bat']);
             if status~=0
-                %                 answ2=questdlg(['PsKill could not kill the matlab window in ',...
-                %                     dataToPassToOtherFunctions.clientMachineNames{counter},...
-                %                     '; Do you want to attempt killing ALL Matlab windows ',...
-                %                     ' in the machine?'],'Kill all MATLAB windows','Yes','No','No');
-                %                 switch(answ2)
-                %                     case 'Yes'
                 disp(['sending kill-all Matlab signal to ',...
                     dataToPassToOtherFunctions.clientMachineNames{counter}]);
                 [status2 result2] = psexecos(['\\',...
@@ -1231,12 +1126,6 @@ switch(answ)
                         dataToPassToOtherFunctions.clientMachineNames{counter},...
                         ' during both attempts']);
                 end
-                
-                %                     otherwise
-                %                         disp(['psexec failed to launch kill process in ',...
-                %                             dataToPassToOtherFunctions.clientMachineNames{counter}]);
-                %                 end
-                
             end
         end
         if exist('distributedComputeDetails.mat','file')
@@ -1308,14 +1197,14 @@ if ischar(updateString)
             updateString2 = [updateString2,...
                 '\',updateString(slashes(i)+1:slashes(i+1))];
         end
-        
+
     end
     fprintf(f,updateString2);
     fclose(f);
     cd(curDir);
 else
     returnS = fileread([varargin{1},filesep,'execution_status.txt']);
-    
+
 end
 
 end
